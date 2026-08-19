@@ -1,0 +1,19 @@
+@import "tailwindcss";
+
+@theme {
+  --color-forest: #2D6A2D;
+  --color-forest-dark: #235423;
+  --color-forest-light: #3D8B3D;
+  --color-sage: #F0F5F0;
+  --color-charcoal: #1C1C1C;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+/* Custom scrollbar and animations */
+::selection {
+  background-color: #2D6A2D;
+  color: #FFFFFF;
+}

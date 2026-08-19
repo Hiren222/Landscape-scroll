@@ -1,0 +1,6 @@
+{
+  "name": "Landscaping Company",
+  "description": "Transforming Outdoor Spaces, One Garden at a Time. Professional landscaping services in Austin, Texas.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
