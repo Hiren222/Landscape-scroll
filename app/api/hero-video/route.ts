@@ -4,7 +4,11 @@ import path from 'path';
 import { Readable } from 'stream';
 
 export async function GET(req: NextRequest) {
-  let filePath = path.join(process.cwd(), 'public', 'landscape-bg.mp4');
+  let filePath = path.join(process.cwd(), 'public', 'Landscape-Bg-final.mp4');
+
+  if (!fs.existsSync(filePath)) {
+    filePath = path.join(process.cwd(), 'public', 'landscape-bg.mp4');
+  }
 
   if (!fs.existsSync(filePath)) {
     filePath = path.join(process.cwd(), 'public', 'landscape.mp4');

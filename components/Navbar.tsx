@@ -14,17 +14,25 @@ export default function Navbar({ activeSection, onGetQuoteClick }: NavbarProps) 
 
   useEffect(() => {
     const handleScroll = () => {
-      // Past 80px activate frosted glass header
-      if (window.scrollY > 80) {
-        setIsScrolled(true);
+      // Keep navbar transparent while scrolling through the pinned hero animation
+      const heroContainer = document.getElementById('hero-scroll-container');
+      if (heroContainer) {
+        const heroBottom = heroContainer.offsetTop + heroContainer.offsetHeight;
+        // Trigger white frosted navbar only once the hero animation has fully finished
+        const triggerPoint = heroBottom - window.innerHeight - 30;
+        setIsScrolled(window.scrollY >= triggerPoint);
       } else {
-        setIsScrolled(false);
+        setIsScrolled(window.scrollY > 80);
       }
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
+    window.addEventListener('resize', handleScroll, { passive: true });
     handleScroll();
-    return () => window.removeEventListener('scroll', handleScroll);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('resize', handleScroll);
+    };
   }, []);
 
   const navItems = [

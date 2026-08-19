@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import Image from 'next/image';
 import { motion } from 'motion/react';
 import { ArrowRight, Star, ChevronDown } from 'lucide-react';
@@ -16,6 +16,9 @@ export default function Hero({ onViewWorkClick, onGetQuoteClick }: HeroProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const pinRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
+  const scrollIndicatorRef = useRef<HTMLDivElement>(null);
+  const [videoReady, setVideoReady] = useState(false);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -24,88 +27,92 @@ export default function Hero({ onViewWorkClick, onGetQuoteClick }: HeroProps) {
 
     const video = videoRef.current;
     const container = containerRef.current;
+    const content = contentRef.current;
+    const indicator = scrollIndicatorRef.current;
     if (!video || !container) return;
 
-    // Helper for one-time event listener (especially for iOS unlock)
-    function once(
-      el: HTMLElement | Document | HTMLVideoElement,
-      event: string,
-      fn: EventListenerOrEventListenerObject,
-      opts?: boolean | AddEventListenerOptions
-    ) {
-      const onceFn = function (this: unknown, e: Event) {
-        el.removeEventListener(event, onceFn);
-        if (typeof fn === 'function') {
-          fn.call(this, e);
-        }
-      };
-      el.addEventListener(event, onceFn, opts);
-      return onceFn;
+    video.muted = true;
+    video.pause();
+
+    const onReady = () => {
+      setVideoReady(true);
+      if (video.currentTime === 0) {
+        video.currentTime = 0.001;
+      }
+    };
+
+    if (video.readyState >= 1) {
+      onReady();
+    } else {
+      video.addEventListener('loadedmetadata', onReady);
+      video.addEventListener('canplay', onReady);
+      video.addEventListener('loadeddata', onReady);
     }
 
-    // Activate video context on mobile/iOS touch
-    once(document.documentElement, 'touchstart', () => {
-      video.play().then(() => video.pause()).catch(() => {});
-    });
-
-    const src = video.currentSrc || video.src || '/landscape-bg.mp4';
-
-    // GSAP ScrollTrigger timeline for video scrubbing
+    // GSAP ScrollTrigger timeline purely for scroll-driven scrubbing & fade out at 25%
     const ctx = gsap.context(() => {
-      const tl = gsap.timeline({
-        defaults: { duration: 1, ease: 'none' },
-        scrollTrigger: {
-          trigger: container,
-          start: 'top top',
-          end: 'bottom bottom',
-          scrub: true,
+      // 1. Video scrubbing across the entire container
+      ScrollTrigger.create({
+        trigger: container,
+        start: 'top top',
+        end: 'bottom bottom',
+        scrub: 1.2,
+        onUpdate: (self) => {
+          const duration = video.duration && !isNaN(video.duration) && video.duration > 0 ? video.duration : 25.5;
+          const targetTime = self.progress * duration;
+          video.pause();
+          video.currentTime = targetTime;
         },
       });
 
-      const setupAnimation = () => {
-        const duration = video.duration && !isNaN(video.duration) && video.duration > 0 ? video.duration : 25.5;
-        tl.clear();
-        tl.fromTo(
-          video,
-          { currentTime: 0 },
-          { currentTime: duration, ease: 'none' }
+      // 2. Hero Text & CTA Content Fades out completely by 10% scroll progress
+      if (content) {
+        gsap.fromTo(
+          content,
+          { opacity: 1, y: 0 },
+          {
+            opacity: 0,
+            y: -30,
+            ease: 'none',
+            scrollTrigger: {
+              trigger: container,
+              start: 'top top',
+              end: '10% top',
+              scrub: 0.3,
+              onUpdate: (self) => {
+                // Disable pointer events when faded
+                if (content) {
+                  content.style.pointerEvents = self.progress > 0.7 ? 'none' : 'auto';
+                }
+              },
+            },
+          }
         );
-      };
+      }
 
-      if (video.readyState >= 1) {
-        setupAnimation();
-      } else {
-        once(video, 'loadedmetadata', () => {
-          setupAnimation();
-        });
+      // 3. Scroll indicator fades out quickly within 6%
+      if (indicator) {
+        gsap.fromTo(
+          indicator,
+          { opacity: 1 },
+          {
+            opacity: 0,
+            ease: 'none',
+            scrollTrigger: {
+              trigger: container,
+              start: 'top top',
+              end: '6% top',
+              scrub: 0.2,
+            },
+          }
+        );
       }
     }, container);
 
-    // Pre-fetch blob optimization for ultra-smooth scrub buffering
-    const timer = setTimeout(() => {
-      if (typeof window !== 'undefined' && 'fetch' in window && src) {
-        fetch(src)
-          .then((response) => {
-            if (!response.ok) throw new Error('Video fetch status: ' + response.status);
-            return response.blob();
-          })
-          .then((blob) => {
-            const blobURL = URL.createObjectURL(blob);
-            const t = video.currentTime;
-            once(document.documentElement, 'touchstart', () => {
-              video.play().then(() => video.pause()).catch(() => {});
-            });
-            video.setAttribute('src', blobURL);
-            video.currentTime = t + 0.01;
-          })
-          .catch((err) => {
-            console.log('Video blob caching fallback:', err);
-          });
-      }
-    }, 800);
-
     return () => {
-      clearTimeout(timer);
+      video.removeEventListener('loadedmetadata', onReady);
+      video.removeEventListener('canplay', onReady);
+      video.removeEventListener('loadeddata', onReady);
       ctx.revert();
     };
   }, []);
@@ -114,46 +121,49 @@ export default function Hero({ onViewWorkClick, onGetQuoteClick }: HeroProps) {
     <div
       id="hero-scroll-container"
       ref={containerRef}
-      className="relative w-full h-[320vh] z-0"
+      className="relative w-full h-[550vh] z-0 bg-[#0F1710]"
     >
       {/* Sticky / Pinned Viewport Container */}
       <section
         ref={pinRef}
         className="sticky top-0 w-full h-screen flex items-center justify-center overflow-hidden -mt-20 z-0"
       >
-        {/* Background Video & Fallback Image */}
-        <div className="absolute inset-0 z-0 bg-black overflow-hidden pointer-events-none">
-          {/* Static Fallback Poster Image */}
-          <Image
-            src="https://images.unsplash.com/photo-1558904541-efa843a96f01?auto=format&fit=crop&w=2000&q=80"
-            alt="Austin Texas Landscaping & Hardscaping Background"
-            fill
-            priority
-            referrerPolicy="no-referrer"
-            className="object-cover object-center scale-105"
-          />
+        {/* Background Video Layer */}
+        <div className="absolute inset-0 z-0 bg-[#0F1710] overflow-hidden pointer-events-none">
+          {/* Static Fallback Poster Image (only visible before video starts rendering) */}
+          <div className={`absolute inset-0 z-0 transition-opacity duration-700 ${videoReady ? 'opacity-0' : 'opacity-100'}`}>
+            <Image
+              src="https://images.unsplash.com/photo-1558904541-efa843a96f01?auto=format&fit=crop&w=2000&q=80"
+              alt="Austin Texas Landscaping & Hardscaping Background"
+              fill
+              priority
+              referrerPolicy="no-referrer"
+              className="object-cover object-center scale-105"
+            />
+          </div>
 
-          {/* Background Video with Scrubbing */}
+          {/* Active Background Video (No autoplay, strictly scroll-driven) */}
           <video
             ref={videoRef}
             muted
             playsInline
             preload="auto"
-            className="video-background absolute inset-0 w-full h-full object-cover object-center scale-105 z-0"
-            src="/landscape-bg.mp4"
+            className="absolute inset-0 w-full h-full object-cover object-center scale-105 z-10"
+            src="/Landscape-Bg-final.mp4"
           >
-            <source src="/landscape-bg.mp4" type="video/mp4" />
+            <source src="/Landscape-Bg-final.mp4" type="video/mp4" />
             <source src="/api/hero-video" type="video/mp4" />
-            <source src="/landscape.mp4" type="video/mp4" />
           </video>
 
-          {/* Vignette & Soft Darkness for crystal clear editorial text */}
-          <div className="absolute inset-0 bg-black/45 backdrop-contrast-[1.05] z-1" />
-          <div className="absolute inset-0 bg-radial-at-c from-black/20 via-black/50 to-black/80 z-1" />
+          {/* Subtle darkness tint for text legibility without muddying video colors */}
+          <div className="absolute inset-0 bg-black/20 z-20" />
         </div>
 
-        {/* Hero Content - Centered Minimal Editorial Layout matching reference */}
-        <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-28 w-full text-center flex flex-col items-center">
+        {/* Hero Content - Centered Minimal Editorial Layout */}
+        <div
+          ref={contentRef}
+          className="relative z-30 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-36 sm:pt-44 pb-20 w-full text-center flex flex-col items-center translate-y-4 sm:translate-y-8 will-change-transform"
+        >
           {/* Main Headline */}
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
@@ -213,7 +223,10 @@ export default function Hero({ onViewWorkClick, onGetQuoteClick }: HeroProps) {
         </div>
 
         {/* Scroll Indicator Prompt */}
-        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10 flex flex-col items-center gap-1.5 text-white/70 pointer-events-none">
+        <div
+          ref={scrollIndicatorRef}
+          className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 flex flex-col items-center gap-1.5 text-white/70 pointer-events-none"
+        >
           <span className="text-[11px] font-medium uppercase tracking-[0.25em] text-white/60">Scroll</span>
           <ChevronDown className="w-3.5 h-3.5 text-white/60 animate-bounce" />
         </div>
