@@ -35,6 +35,7 @@ export default function ProjectModal({ project, onClose, onGetQuoteForProject }:
             src={project.image}
             alt={project.title}
             fill
+            unoptimized
             referrerPolicy="no-referrer"
             className="object-cover"
           />
