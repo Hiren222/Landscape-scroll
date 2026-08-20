@@ -6,13 +6,6 @@ import { motion } from 'motion/react';
 import { Eye } from 'lucide-react';
 import ProjectModal, { ProjectItem } from './ProjectModal';
 
-import projectImg1 from '@/public/colpet-landscape-design-content-0423-3.jpg';
-import projectImg2 from '@/public/images-5.jpg';
-import projectImg3 from '@/public/images-6.jpg';
-import projectImg4 from '@/public/images-7.jpg';
-import projectImg5 from '@/public/images-8.jpg';
-import projectImg6 from '@/public/images-9.jpg';
-
 interface OurWorkProps {
   onGetQuoteForProject: (projectTitle: string) => void;
 }
@@ -30,7 +23,7 @@ export default function OurWork({ onGetQuoteForProject }: OurWorkProps) {
       city: 'North Austin',
       description: 'Full backyard botanical garden and stone border installation',
       fullDetails: 'Complete overhaul of an overgrown property into a flourishing, native Texas drought-tolerant garden featuring perennial beds, natural stone borders, and lush surrounding greenery.',
-      image: projectImg1,
+      image: '/colpet-landscape-design-content-0423-3.jpg',
       duration: '5 Days',
       highlights: [
         'Native Texas perennial planting',
@@ -47,7 +40,7 @@ export default function OurWork({ onGetQuoteForProject }: OurWorkProps) {
       city: 'Round Rock',
       description: 'Complete emerald turf and landscape border transformation',
       fullDetails: 'Restoration of residential turf through soil grading, precision edging, deep aeration, premium sod installation, and manicured shrub borders.',
-      image: projectImg2,
+      image: '/images-5.jpg',
       duration: '3 Days',
       highlights: [
         'Soil pH balancing & grading',
@@ -64,7 +57,7 @@ export default function OurWork({ onGetQuoteForProject }: OurWorkProps) {
       city: 'South Austin',
       description: 'Custom flagstone patio surrounded by lush landscape architecture',
       fullDetails: 'Crafted a 450 sq ft natural flagstone patio harmoniously integrated with surrounding landscape beds, specimen trees, and native decorative grasses.',
-      image: projectImg3,
+      image: '/images-6.jpg',
       duration: '7 Days',
       highlights: [
         'Custom Austin flagstone paving',
@@ -81,7 +74,7 @@ export default function OurWork({ onGetQuoteForProject }: OurWorkProps) {
       city: 'Austin',
       description: 'Curved stone walkway winding through lush estate shrubbery and trees',
       fullDetails: 'Comprehensive landscape architecture project featuring winding flagstone garden paths, dense flowering shrub arrangements, and shade-tolerant ornamental greenery.',
-      image: projectImg4,
+      image: '/images-7.jpg',
       duration: '6 Days',
       highlights: [
         'Curved natural stone pathway',
@@ -98,7 +91,7 @@ export default function OurWork({ onGetQuoteForProject }: OurWorkProps) {
       city: 'Westlake',
       description: 'Multi-tiered landscape gardens with stone retainers and greenery',
       fullDetails: 'Hillside landscape renovation incorporating natural limestone retaining tiers, architectural shrub shaping, specimen ornamental grasses, and mature tree preservation.',
-      image: projectImg5,
+      image: '/images-8.jpg',
       duration: '4 Days',
       highlights: [
         'Tiered limestone retaining beds',
@@ -115,7 +108,7 @@ export default function OurWork({ onGetQuoteForProject }: OurWorkProps) {
       city: 'Lake Travis',
       description: 'Pristine landscape design with stone pathways and sculptural gardens',
       fullDetails: 'A clean, modern landscape rejuvenation featuring structured boxwood groupings, ornamental grasses, crushed stone pathways, and fresh seasonal blooms.',
-      image: projectImg6,
+      image: '/images-9.jpg',
       duration: '3 Days',
       highlights: [
         'Structured landscape geometry',

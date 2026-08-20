@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import Image, { StaticImageData } from 'next/image';
+import Image from 'next/image';
 import { X, MapPin, Calendar, CheckCircle2, ArrowRight } from 'lucide-react';
 
 export interface ProjectItem {
@@ -12,7 +12,7 @@ export interface ProjectItem {
   city: string;
   description: string;
   fullDetails: string;
-  image: string | StaticImageData;
+  image: string;
   duration: string;
   highlights: string[];
 }
